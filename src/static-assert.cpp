@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wunused-value"
+
 #include <iostream>
 
 using namespace std;
