@@ -9,6 +9,8 @@ using namespace std;
  * situations such as when we have a generic function and we want to
  * do something slightly different for each type. Let's implement some of them
  * on our own.
+ *
+ * @ref: https://www.youtube.com/watch?v=VBI6TSo8Zog&list=PLWxziGKTUvQFIsbbFcTZz7jOT4TMGnZBh&index=1
  */
 
 // since the input is a template value, we can't use dynamic casting to check

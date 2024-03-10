@@ -14,6 +14,8 @@ using namespace std;
   * well to TMP. This is because variables in template metaprograms are immutable,
   * since they are instantiated only once. TMP is a form of functional programming,
   * where the majority of control-flow is implemented with recursion.
+  *
+  * @ref: https://www.youtube.com/watch?v=_yqIdYBdyPo&list=PLWxziGKTUvQFIsbbFcTZz7jOT4TMGnZBh&index=2
   */
 
 bool runtimeContains(const string& p_TypeToFind, const vector<string>& p_Types,
