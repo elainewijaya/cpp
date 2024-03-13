@@ -50,10 +50,67 @@ public:
   C m_C;
 };
 
+/**
+  * Constructors and virtual
+  *
+  * Why can't a ctor be virtual? error: constructor cannot be declared 'virtual'
+  * A virtual call is a way to do something without knowing the complete type
+  * of an object. But to create an object, you need to know exactly what type
+  * you want to create. So a constructor cannot be virtual.
+  * @ref: https://www.stroustrup.com/bs_faq2.html#virtual-ctor
+  *
+  * What about calling virtual functions from a constructor?
+  * In a ctor, virtual calls are disabled because the override mechanisms don't exist yet!
+  * If a derived class is constructed, it will first call the ctor of the base class.
+  * In the base class ctor, when it sees a virtual function call, it there are no derived
+  * implementations yet - only the existing base class one - so it will call the base class one.
+  *
+  * @ref: https://www.stroustrup.com/bs_faq2.html#vcall
+  *
+  * More details for above: Recall how virtual functions work.
+  *
+  * VTABLE: At compile time, we create the vtable per class (not instance). This table contains
+  * a function pointer to the most-derived function accessible by that class.
+  *
+  * VPTR: At compile time, the compiler ALSO adds a hidden pointer as a member of a base class.
+  * When an object is created (when the ctor is called), the vptr is set to the
+  * vtable of that class. VPTR will be inherited by derived classes.
+  *
+  * When we call a virtual function through the base class, first we see that it's a virtual function.
+  * Then we use the vptr to get the vtable for its (derived) class (the derived class knows which class it is).
+  * Then we get the correct function for the derived class to call through the vtable.
+  *
+  * SO: for our original problem, when we create a derived class, the base ctor is called and calls
+  * a virtual function. At this point the vptr is still set to the vtable of the base class. So the base
+  * class version get called.
+  *
+  * @ref: https://www.learncpp.com/cpp-tutorial/the-virtual-table/
+  */
+
+
+/**
+  * Delegating constructors
+  *
+  * Delegating constructors allow us to call ctors of the same, or base class,
+  * from within the ctor itself, not in the body.
+  */
+
+struct E {
+public:
+  int num;
+  E() { num = 10; cout << "E default ctor" << endl; }
+  E(int x) { num = x; cout << "E(int x) ctor"<< endl; }
+  E(int x, int y) : E(x*y) { cout << "E delegating ctor" << endl; } // delegates to E(int x)
+};
+
+struct F : public E {
+  F(int x, int y, int z) : E(x*y, z) { cout << "F delegating ctor" << endl; }
+  F() { cout << "F default ctor" << endl; }
+  F(int x) { cout << "F non-delegating ctor" << endl; }
+};
 
 int main() {
-  cout << "START" << endl;
-  Derived obj;
+  cout << "=====START=====" << endl;
 
   // this works
   const auto pFoo = &Derived::foo;
@@ -72,6 +129,26 @@ int main() {
   // is given to the ctor of A, in this case, the default ctor since no args
   // are provided. Then, the ctor of A "runs" and we get an object A on the
   // memory for variable a.
+
+  cout << "BASE/DERIVED CTOR/DTOR ORDER" << endl;
+  Derived obj;
+  // order of construction: Member of Base -> Base -> Member of Derived -> Derived
+  // Class members are constructed in the order they are DECLARED in the header.
+  // order of destruction: exactly opposite
+  // A class needs to have its members constructed before it can be completely constructed.
+  // A derived class must have its base class fully constructed before it can be
+  // completely constructed.
+
+  cout << "DELEGATING CONSTRUCTORS" << endl;
+  E e(2, 5); // Will call the E(int x) ctor, then run the delegating ctor body
+  F f(2, 4, 10); // Will call E(int x, int y) delegating ctor, and E(int x) ctor, then
+  // run F(int x, int y, int z) ctor body
+  F f2(2); // MUST call a ctor for E, so calls its default ctor, then calls F's ctor
+  // Marking E() = delete will cause this error:
+  // error: call to deleted constructor of 'E'
+  // --> F() { cout << "F default ctor" << endl; }
+  // Base/member class ctors are implicitly called, there must be an implementation for
+  // derived/container class to use or else the compiler will complain
   //
   cout << "END" << endl;
 }
