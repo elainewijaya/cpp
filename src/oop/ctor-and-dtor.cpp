@@ -109,6 +109,53 @@ struct F : public E {
   F(int x) { cout << "F non-delegating ctor" << endl; }
 };
 
+/**
+  * Pure virtual functions and abstract base class
+  *
+  * An abstract function is marked by = 0 in the header file.
+  * Abstract functions MUST be virtual.
+  * Any class with at least 1 abstract function cannot be instantiated.
+  * Just like a ctor cannot be virtual, it also cannot be pure virtual.
+  * Even if a base interface class cannot be instantiated, a derived class (which
+  * provides implementations for all its abstract methods) will instantiate it,
+  * hence an abstract class needs to have a ctor defined.
+  *
+  * A pure virtual function may still have a definition (!)
+  * This means that derived classes are required to override it, but you can still
+  * call the base class's implementation directly from the derived class. We can't
+  * instantiate the base class directly, but remember that it is implicitly instantiated
+  * in the derived class!
+  *
+  * Destructors can be pure virtual. However, they must have a definition so that derived
+  * classes know how to destroy them.
+  * Unlike normal abstract functions, a pure dtor DOES NOT need to be implemented in the derived class.
+  * The definition must be provided and is tied to the base class.
+  * The only difference is that it marks the class as abstract and cannot be instantiated.
+  * The reason dtors are different are that they are never "overridden" - they are always called cumulatively.
+  * E.g the basic case of base class dtor being virtual will call the derived class dtor first (via vptr) and then itself.
+  * It doesn't OVERRIDE the base class dtor, it's cumulative - so it's different in that sense.
+  *
+  * @ref: https://www.learncpp.com/cpp-tutorial/pure-virtual-functions-abstract-base-classes-and-interface-classes/
+  */
+
+class G { // abstract class
+public:
+  virtual void print() = 0;
+  virtual ~G() = 0;
+};
+// defn must not be inline
+void G::print() { cout << "G says hello" << endl; }
+G::~G() { cout << "G is destructed" << endl; }
+
+class H : public G {
+public:
+  virtual void print() override { cout << "H says hello" << endl; }
+  void useGPrint() { G::print(); }
+};
+
+class Interface {
+};
+
 int main() {
   cout << "=====START=====" << endl;
 
@@ -149,6 +196,9 @@ int main() {
   // --> F() { cout << "F default ctor" << endl; }
   // Base/member class ctors are implicitly called, there must be an implementation for
   // derived/container class to use or else the compiler will complain
-  //
+
+  H h;
+  h.print();
+  h.useGPrint();
   cout << "END" << endl;
 }
